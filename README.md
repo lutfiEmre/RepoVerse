@@ -1,10 +1,31 @@
 # RepoVerse
 
-Yerel kod depolarını ve public website yüzeylerini analiz edip Three.js tabanlı bir 3D architecture intelligence grafiğine dönüştüren local-first monorepo.
+RepoVerse is a local-first 3D map for exploring codebases and public website architecture.
 
-## Çalıştırma
+I built it because a repository is much easier to understand when you can see the relationships instead of opening files one by one. The app turns source files, pages, assets and detected technologies into an interactive Three.js scene.
 
-### Backend
+[emrelutfi.com](https://emrelutfi.com) · [GitHub](https://github.com/lutfiEmre)
+
+## What it does
+
+- Scans local Python, JavaScript and TypeScript repositories.
+- Extracts Python functions, classes and imports with the standard-library AST.
+- Resolves local JavaScript/TypeScript imports, including the common `@/*` alias.
+- Crawls a limited number of same-origin pages when you switch to `Web` mode.
+- Maps public pages, scripts, stylesheets, images and technology fingerprints.
+- Uses local Ollama for short code summaries, with a static fallback when Ollama is offline.
+- Presents everything as a 3D constellation with orbit controls, animated camera focus, a source index and a glass details panel.
+
+## Stack
+
+- Backend: Python, FastAPI, Pydantic, `ast`, HTTPX
+- Frontend: Next.js App Router, TypeScript, Tailwind CSS
+- 3D: Three.js, React Three Fiber, Drei, GSAP
+- Local AI: Ollama (`qwen2.5` by default)
+
+## Run locally
+
+### 1. Start the API
 
 ```bash
 cd backend
@@ -14,11 +35,9 @@ pip install -r requirements.txt
 uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-API, repo kökünden `uvicorn backend.main:app` biçiminde de import edilebilir.
+### 2. Start the web app
 
-### Frontend
-
-Yeni bir terminalde:
+In a second terminal:
 
 ```bash
 cd frontend
@@ -26,37 +45,77 @@ npm install
 npm run dev
 ```
 
-Ardından [http://localhost:3000](http://localhost:3000) adresini açın ve taranacak yerel klasörün mutlak yolunu girin.
+Open [http://localhost:3000](http://localhost:3000).
 
-### Yerel Ollama
+## Using RepoVerse
 
-Özetleme isteğe bağlıdır. Ollama çalışmıyorsa arayüz otomatik olarak statik analiz fallback özetini gösterir.
+### Repository mode
+
+Choose `Repo` and enter an absolute local path, for example:
+
+```text
+/Users/your-name/Documents/my-project
+```
+
+The scanner skips common generated folders such as `node_modules`, `.next`, `dist`, `build`, `.git` and Python caches.
+
+### Website mode
+
+Choose `Web` and enter a public URL:
+
+```text
+https://example.com
+```
+
+The crawler stays on the same origin and returns a bounded graph of HTML pages, public assets and technology signals. It does not bypass authentication or try to infer private backend services from a URL alone.
+
+## Ollama summaries
+
+Ollama is optional. Without it, RepoVerse uses a local static summary instead.
 
 ```bash
 ollama serve
 ollama pull qwen2.5
 ```
 
-İsterseniz `OLLAMA_MODEL` ve `OLLAMA_URL` ortam değişkenleriyle backend varsayılanlarını değiştirebilirsiniz. Frontend API adresi için de `NEXT_PUBLIC_API_URL` kullanılabilir; varsayılan değer `http://localhost:8000`.
+You can override the defaults with `OLLAMA_MODEL`, `OLLAMA_URL` and `NEXT_PUBLIC_API_URL`.
 
-### Website architecture modu
+## API
 
-Arayüzde `Web` sekmesini seçip `https://example.com` gibi bir URL girin. Crawler aynı origin içindeki sınırlı sayıda HTML sayfasını, script/stylesheet/image assetlerini ve HTML/header teknolojisi sinyallerini çıkarır. Graph; site kökü, sayfalar, assetler, sayfa ilişkileri ve tespit edilen teknolojileri ayrı node tipleri olarak gösterir.
+- `GET /api/health` — API health check
+- `POST /api/scan` — scan a local repository with `{ "path": "..." }`
+- `POST /api/scan-url` — crawl a website with `{ "url": "https://...", "max_pages": 8 }`
+- `POST /api/summary` — request a local AI summary for a repository file
 
-Bu mod public ve erişilebilir yüzey içindir; login gerektiren sayfaları, client-side route’ları ve runtime network çağrılarını eksiksiz görebilmek için bir sonraki katmanda Playwright browser instrumentation eklenebilir. Bu ayrım bilinçlidir: statik HTML crawler hızlı ve dependency-light kalır, browser instrumentation ise gerçek render/network davranışını yakalar.
+## Project layout
 
-## Veri akışı
+```text
+repoverse/
+├── backend/
+│   ├── ai_service.py
+│   ├── main.py
+│   ├── parser.py
+│   ├── web_scanner.py
+│   └── requirements.txt
+└── frontend/
+    └── src/
+        ├── app/
+        ├── components/
+        └── utils/
+```
 
-1. `POST /api/scan`, `.py`, `.js`, `.ts` ve `.tsx` dosyalarını tarar.
-2. `POST /api/scan-url`, same-origin HTML sayfalarını ve public asset/technology sinyallerini tarar.
-3. Python AST; fonksiyon, sınıf ve import bilgilerini çıkarır. JS/TS tarafında dış bağımlılık gerektirmeyen import/fonksiyon/sınıf desenleri kullanılır.
-4. Repo içi importlar ve website içi sayfa/asset ilişkileri `edges` olarak döner.
-5. Repo düğümüne tıklanınca `POST /api/summary` yerel Ollama’dan iki cümlelik teknik özet ister; website node’ları public architecture brief gösterir.
-6. Three.js `OrbitControls` + GSAP camera director; intro fly-in, auto-orbit, node focus ve reset view akışlarını yönetir.
-
-## Doğrulama
+## Verification
 
 ```bash
 python3 -m compileall -q backend
-cd frontend && npm run typecheck && npm run build
+cd frontend
+npm run typecheck
+npm run build
 ```
+
+## Author
+
+Built by [Emre Lutfi](https://emrelutfi.com).
+
+- Website: [emrelutfi.com](https://emrelutfi.com)
+- GitHub: [github.com/lutfiEmre](https://github.com/lutfiEmre)

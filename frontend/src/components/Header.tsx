@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderSearch, Globe2, Orbit, Radar, ScanLine } from "lucide-react";
+import { FolderSearch, Globe2, Github, Orbit, Radar, ScanLine } from "lucide-react";
 
 export type ScanMode = "repository" | "website";
 
@@ -22,8 +22,13 @@ export function Header({ path, isScanning, onPathChange, onScan, mode, onModeCha
           <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-cyanpulse shadow-[0_0_10px_#55f5ff]" />
         </div>
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.34em] text-cyanpulse/70">Local intelligence layer</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-cyanpulse/70"><a className="transition hover:text-white" href="https://emrelutfi.com" rel="noreferrer" target="_blank">emrelutfi.com</a><span className="mx-1.5 text-white/20">·</span> local intelligence layer</p>
           <h1 className="text-xl font-semibold tracking-tight text-white">Repo<span className="text-cyanpulse">Verse</span></h1>
+          <div className="mt-0.5 flex items-center gap-2 font-mono text-[9px] text-white/30">
+            <span>by Emre Lutfi</span>
+            <span className="text-white/15">·</span>
+            <a className="inline-flex items-center gap-1 transition hover:text-white/80" href="https://github.com/lutfiEmre" rel="noreferrer" target="_blank"><Github size={10} /> github.com/lutfiEmre</a>
+          </div>
         </div>
       </div>
 
